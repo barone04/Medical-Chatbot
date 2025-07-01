@@ -38,5 +38,5 @@ def create_chunks(extract_data):
 
 document = create_chunks(extract_data=data)
 
-print("shape of document: ", document[4])
+print("shape of document: ", document[11])
 

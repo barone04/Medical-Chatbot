@@ -1,0 +1,8 @@
+datasets
+langchain
+langchain_community
+langchain_text_splitters
+chromadb
+langchain_google_genai
+streamlit
+protobuf==3.20.*
