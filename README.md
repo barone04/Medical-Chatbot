@@ -20,15 +20,15 @@ A Streamlit-based chatbot that leverages large language models to assist with an
 ```bash
 git clone https://github.com/barone04/Medical-Chatbot.git
 cd Medical-Chatbot
-
+```
 ### ✅ Step 2: Create and activate Conda environment
 
 ```bash
 conda env create -f environment.yml
 conda activate medical-bot-env
-
+```
 ### ✅ Step 3: Running the App
 
 ```bash
 streamlit run app.py
-
+```
