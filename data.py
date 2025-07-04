@@ -1,42 +1,62 @@
 from datasets import load_dataset
+from langchain.agents.agent_toolkits import create_conversational_retrieval_agent
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain.schema import Document
 import re
 
-#============== LOAD QA DATA ====================
-ds = load_dataset("thangvip/medical-data")
-data = ds["train"]["text"]
-# print(len(data))
 
-#============== EXTRACT QUESTION & SPLIT CHUNKS =================
-def question_extract(text, prev_question=None):
-    match = re.search(r"[^.?!]*\?", text)
-    if match:
-        return match.group(0).strip()
-    else:
-        return prev_question
+ds = load_dataset("NTCong/medical_qa_vn")
+print(len(ds))
+question = ds["train"]["QUESTION"]
+context = ds["train"]["CONTEXT"]
+answer = ds["train"]["ANSWER"]
 
-splitter = RecursiveCharacterTextSplitter(
-        chunk_size=500,
-        chunk_overlap=50
-    )
 
-def create_chunks(extract_data):
-    prev_q=None
+def convert_to_documents(raw_documents):
     documents = []
+    for doc in raw_documents:
+        c = doc.get("content")
+        content = c if c is not None else ""
 
-    # text_chunks = splitter.split_text(extract_data)
-    for text in data:
-        text_chunks = splitter.split_text(text)
-        for chunk in text_chunks:
-            question = question_extract(chunk, prev_q)
-            documents.append({
-                "content": chunk,
-                "metadata": {"question": question}
-            })
-            prev_q = question
+        documents.append(
+            Document(
+                page_content=content,
+                metadata=doc.get("metadata"),
+            )
+        )
     return documents
 
-document = create_chunks(extract_data=data)
+def create_document(question, context, answer):
+    raw_documents = []
+    for q, c, a in zip(question, context, answer):
+        if c is None:
+            c = ""
 
-print("shape of document: ", document[11])
+        raw_documents.append({
+            "content": c,
+            "metadata": {
+                "question": q,
+                "answer": a,
+            }
+        })
+
+    documents = convert_to_documents(raw_documents)
+    return documents
+documents = create_document(question=question, context=context, answer=answer)
+# print("type(documents[0]):", type(documents[0]))
+
+def split_documents(documents):
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=200,
+        chunk_overlap=40
+    )
+    all_chunks=[]
+    for i, doc in enumerate(documents):
+        chunks = splitter.split_documents([doc])
+        for j, chunk in enumerate(chunks):
+            all_chunks.append(chunk)
+    return all_chunks
+all_chunks = split_documents(documents)
+print("Shape of chunk", all_chunks[2])
+
 
